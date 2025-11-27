@@ -1,52 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.tenant.name }}-rtpengine
+  name: {{ .Release.Name }}-rtpengine
+  labels:
+    tenant: {{ .Values.tenant.name }}
 spec:
   replicas: 1
+  
+  # CORREÇÃO: Selector
   selector:
     matchLabels:
       app: rtpengine
-      tenant: {{ .Values.tenant.name }}
+      tenant: {{ .Values.tenant.name }} 
+      
   template:
     metadata:
       labels:
         app: rtpengine
         tenant: {{ .Values.tenant.name }}
       annotations:
-        # LÓGICA MULTUS: Fixa o IP definido no values.yaml
+        # LÓGICA MULTUS
         k8s.v1.cni.cncf.io/networks: |
           [
             {
-              "name": "{{ .Values.tenant.name }}-net",
+              "name": "{{ .Release.Name }}-net",
               "interface": "net1",
               "ips": [ "{{ .Values.tenant.internalIp }}/24" ]
             }
           ]
     spec:
-      # Afinidade: Evita rodar no mesmo nó que outro RTPEngine pesado (opcional)
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - rtpengine
-              topologyKey: "kubernetes.io/hostname"
-
-      containers:
+      containers: # CORREÇÃO: O bloco containers deve estar presente
       - name: rtpengine
         image: {{ .Values.images.rtpengine }}
         securityContext:
-          privileged: true # Necessário para o módulo de Kernel
+          privileged: true 
           capabilities:
             add: ["NET_ADMIN", "SYS_NICE"]
         
-        # APLICAÇÃO DOS FLAVORS (Requests = Limits para QoS)
         resources:
           requests:
             cpu: {{ index .Values.resources .Values.flavor "rtpengine" "cpu" }}
@@ -73,12 +63,7 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
           - |
-            echo "Iniciando RTPEngine Flavor: {{ .Values.flavor }}..."
-            
-            # Sintaxe do NAT: IP_LOCAL!IP_PUBLICO
             INTERFACE_FLAG="external/$INTERNAL_NET_IP!$PUBLIC_IP"
-            
-            # Inicia usando o módulo de kernel (tabela 0)
             rtpengine \
               --foreground \
               --interface internal/$K8S_IP \
