@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.tenant.name }}-kamailio
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kamailio
+        tenant: {{ .Values.tenant.name }}
+    spec:
+      containers:
+      - name: kamailio
+        image: {{ .Values.images.kamailio }}
+        resources:
+          requests:
+            cpu: {{ index .Values.resources .Values.flavor "kamailio" "cpu" }}
+            memory: {{ index .Values.resources .Values.flavor "kamailio" "memory" }}
+          limits:
+            cpu: {{ index .Values.resources .Values.flavor "kamailio" "cpu" }}
+            memory: {{ index .Values.resources .Values.flavor "kamailio" "memory" }}
+        env:
+          - name: RTPENGINE_URL
+            value: "{{ .Values.tenant.name }}-rtpengine:2223"
+          - name: ASTERISK_HOST
+            value: "{{ .Values.tenant.name }}-asterisk"
