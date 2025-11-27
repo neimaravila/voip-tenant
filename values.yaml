@@ -1,0 +1,71 @@
+# ============================
+# CONFIGURAÇÕES DO CLIENTE
+# ============================
+tenant:
+  name: "cliente-exemplo"
+  domain: "sip.cliente.com.br"
+  
+  # Rede: Dados para o NAT 1:1
+  # O IP Público que está no seu Mikrotik/Firewall
+  publicIp: "200.200.200.50" 
+  # O IP Interno que será fixado na interface Multus (para receber o NAT)
+  internalIp: "10.10.20.200"
+  multusInterfaceMaster: "ens224" # Nome da interface física no Host RKE2
+
+# ============================
+# FLAVORS (DIMENSIONAMENTO)
+# ============================
+# Escolha: small, medium, large
+flavor: "small"
+
+resources:
+  small:
+    rtpengine:
+      cpu: "500m"    # 0.5 vCPU
+      memory: "512Mi"
+    asterisk:
+      cpu: "500m"
+      memory: "1Gi"
+    kamailio:
+      cpu: "200m"
+      memory: "256Mi"
+
+  medium:
+    rtpengine:
+      cpu: "2000m"   # 2 vCPU (Garantido)
+      memory: "2Gi"
+    asterisk:
+      cpu: "2000m"
+      memory: "4Gi"
+    kamailio:
+      cpu: "500m"
+      memory: "512Mi"
+
+  large:
+    rtpengine:
+      cpu: "4000m"   # 4 vCPU
+      memory: "4Gi"
+    asterisk:
+      cpu: "4000m"
+      memory: "8Gi"
+    kamailio:
+      cpu: "1000m"
+      memory: "1Gi"
+
+# ============================
+# IMAGENS E VERSÕES
+# ============================
+images:
+  rtpengine: sipwise/rtpengine:latest
+  asterisk: asterisk:18-focal # Recomendo criar sua imagem com módulos ODBC
+  kamailio: kamailio:5.7
+
+# ============================
+# BANCO DE DADOS (PARA ASTERISK REALTIME)
+# ============================
+database:
+  host: "postgres-cluster.database.svc.cluster.local"
+  port: "5432"
+  user: "asterisk_user"
+  password: "muda_essa_senha"
+  dbname: "asterisk_db"
