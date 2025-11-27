@@ -1,0 +1,6 @@
+apiVersion: v2
+name: voip-tenant
+description: Stack VoIP PaaS com Asterisk Realtime, Kamailio e RTPEngine
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
