@@ -1,40 +1,83 @@
+# ----------------------------------------------------
+# 1. Serviço para o Kamailio (Ponto de entrada do SIP)
+# ----------------------------------------------------
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.tenant.name }}-asterisk
-spec:
-  selector:
-    app: asterisk
+  name: {{ .Release.Name }}-kamailio
+  labels:
+    app: kamailio
     tenant: {{ .Values.tenant.name }}
+spec:
+  # O Kamailio usa portas padrão SIP (5060 TCP/UDP)
   ports:
     - protocol: UDP
       port: 5060
       targetPort: 5060
-      name: sip
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Values.tenant.name }}-rtpengine
-spec:
-  selector:
-    app: rtpengine
-    tenant: {{ .Values.tenant.name }}
-  ports:
-    - protocol: UDP
-      port: 2223
-      name: ng-control
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Values.tenant.name }}-kamailio
-spec:
+      name: sip-udp
+    - protocol: TCP
+      port: 5060
+      targetPort: 5060
+      name: sip-tcp
+  
+  # O SELETOR DEVE CORRESPONDER EXATAMENTE AOS RÓTULOS DOS PODS DO KAMAILIO
   selector:
     app: kamailio
     tenant: {{ .Values.tenant.name }}
+  
+  # ClusterIP: Acesso apenas dentro do cluster (use LoadBalancer ou NodePort para acesso externo)
+  type: ClusterIP 
+---
+# ----------------------------------------------------
+# 2. Serviço para o Asterisk (Servidor de Lógica/PABX)
+# ----------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-asterisk
+  labels:
+    app: asterisk
+    tenant: {{ .Values.tenant.name }}
+spec:
+  # O Asterisk precisa de portas para SIP (5060) e AMI (5038, se estiver exposta)
   ports:
     - protocol: UDP
       port: 5060
       targetPort: 5060
-      name: sip-kamailio
+      name: sip-udp
+    - protocol: TCP
+      port: 5060
+      targetPort: 5060
+      name: sip-tcp
+  
+  # O SELETOR DEVE CORRESPONDER EXATAMENTE AOS RÓTULOS DOS PODS DO ASTERISK
+  selector:
+    app: asterisk
+    tenant: {{ .Values.tenant.name }}
+  
+  type: ClusterIP
+---
+# ----------------------------------------------------
+# 3. Serviço para o RTPEngine (Controle de Mídia)
+# ----------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-rtpengine
+  labels:
+    app: rtpengine
+    tenant: {{ .Values.tenant.name }}
+spec:
+  # O RTPEngine precisa apenas da porta de controle (NG Protocol)
+  ports:
+    - protocol: UDP
+      port: 2223
+      targetPort: 2223
+      name: ng-control
+  
+  # O SELETOR DEVE CORRESPONDER EXATAMENTE AOS RÓTULOS DOS PODS DO RTPEngine
+  selector:
+    app: rtpengine
+    tenant: {{ .Values.tenant.name }}
+  
+  type: ClusterIP
