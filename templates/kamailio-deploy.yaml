@@ -1,18 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.tenant.name }}-kamailio
+  name: {{ .Release.Name }}-kamailio
+  labels:
+    tenant: {{ .Values.tenant.name }}
 spec:
   replicas: 1
+  
+  # CORREÇÃO: Ambos os rótulos do Pod devem estar no seletor
+  selector:
+    matchLabels:
+      app: kamailio
+      tenant: {{ .Values.tenant.name }} 
+
   template:
     metadata:
       labels:
         app: kamailio
-        tenant: {{ .Values.tenant.name }}
+        tenant: {{ .Values.tenant.name }} # Rótulos do Pod
     spec:
-      containers:
+      containers: # CORREÇÃO: O bloco containers deve estar presente
       - name: kamailio
         image: {{ .Values.images.kamailio }}
+        
         resources:
           requests:
             cpu: {{ index .Values.resources .Values.flavor "kamailio" "cpu" }}
@@ -20,8 +30,17 @@ spec:
           limits:
             cpu: {{ index .Values.resources .Values.flavor "kamailio" "cpu" }}
             memory: {{ index .Values.resources .Values.flavor "kamailio" "memory" }}
+        
+        ports:
+        - containerPort: 5060
+          name: sip-udp
+          protocol: UDP
+        - containerPort: 5060
+          name: sip-tcp
+          protocol: TCP
+        
         env:
           - name: RTPENGINE_URL
-            value: "{{ .Values.tenant.name }}-rtpengine:2223"
+            value: "{{ .Release.Name }}-rtpengine:2223"
           - name: ASTERISK_HOST
-            value: "{{ .Values.tenant.name }}-asterisk"
+            value: "{{ .Release.Name }}-asterisk"
