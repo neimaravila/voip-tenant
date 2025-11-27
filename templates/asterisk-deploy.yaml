@@ -1,24 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.tenant.name }}-asterisk
+  name: {{ .Release.Name }}-asterisk
+  labels:
+    tenant: {{ .Values.tenant.name }}
 spec:
   replicas: 1
+  
+  # CORREÇÃO: Selector
   selector:
     matchLabels:
       app: asterisk
       tenant: {{ .Values.tenant.name }}
+      
   template:
     metadata:
       labels:
         app: asterisk
         tenant: {{ .Values.tenant.name }}
     spec:
-      containers:
+      containers: # CORREÇÃO: O bloco containers deve estar presente
       - name: asterisk
         image: {{ .Values.images.asterisk }}
         
-        # FLAVORS
         resources:
           requests:
             cpu: {{ index .Values.resources .Values.flavor "asterisk" "cpu" }}
@@ -49,4 +53,4 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: {{ .Values.tenant.name }}-asterisk-config
+            name: {{ .Release.Name }}-asterisk-config
