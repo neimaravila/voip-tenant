@@ -1,0 +1,58 @@
+=
+# Grupos de Configuração para organizar a interface
+categories:
+  - VoIP Tenant Settings
+  - Network Configuration
+  - Database Credentials
+
+questions:
+  # ----------------------------------------------------
+  # 1. ESCOLHA DO PLANO (FLAVOR)
+  # ----------------------------------------------------
+  - variable: flavor
+    label: "Plano de Serviço (Flavor)"
+    description: "Selecione o plano de recursos (CPU/RAM) para este cliente."
+    type: enum # Permite apenas valores pré-definidos (dropdown list)
+    required: true
+    default: "medium"
+    group: "VoIP Tenant Settings"
+    options:
+      - small
+      - medium
+      - large
+      
+  # ----------------------------------------------------
+  # 2. CONFIGURAÇÃO DE REDE
+  # ----------------------------------------------------
+  - variable: tenant.publicIp
+    label: "IP Público (NAT de Borda)"
+    description: "O endereço IP público de acesso para o tráfego SIP e RTP. (Ex: 200.200.200.99)"
+    type: string
+    required: true
+    group: "Network Configuration"
+    # Opcional: Adicionar uma expressão regular para validar o formato de IP
+    # validation: "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$"
+    
+  - variable: tenant.internalIp
+    label: "IP Interno (Multus/Cluster)"
+    description: "O endereço IP privado alocado para a interface Multus do RTPEngine (target do NAT 1:1)."
+    type: string
+    required: true
+    group: "Network Configuration"
+    
+  # ----------------------------------------------------
+  # 3. CREDENCIAIS DO BANCO DE DADOS
+  # ----------------------------------------------------
+  - variable: database.dbname
+    label: "Nome do Banco de Dados (Realtime)"
+    description: "O nome do banco de dados PostgreSQL exclusivo para este cliente (Ex: padaria_db)."
+    type: string
+    required: true
+    group: "Database Credentials"
+    
+  - variable: database.password
+    label: "Senha do Usuário DB"
+    description: "Senha que o Asterisk usará para autenticar no Postgres."
+    type: password # Esconde o texto digitado
+    required: true
+    group: "Database Credentials"
