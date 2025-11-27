@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.tenant.name }}-asterisk-config
+data:
+  res_odbc.conf: |
+    [asterisk]
+    enabled => yes
+    dsn => PostgreSQL-asterisk
+    username => {{ .Values.database.user }}
+    password => {{ .Values.database.password }}
+    pre-connect => yes
+
+  extconfig.conf: |
+    [settings]
+    ; Mapeia endpoints, aors e auths para o banco de dados (ODBC)
+    ps_endpoints => odbc,asterisk,ps_endpoints
+    ps_auths => odbc,asterisk,ps_auths
+    ps_aors => odbc,asterisk,ps_aors
+    ps_domain_aliases => odbc,asterisk,ps_domain_aliases
+    ; Voicemail e Filas também podem ir pro banco
+    voicemail => odbc,asterisk,voicemail
+    queues => odbc,asterisk,queues
+
+  sorcery.conf: |
+    [res_pjsip]
+    endpoint=realtime,ps_endpoints
+    auth=realtime,ps_auths
+    aor=realtime,ps_aors
