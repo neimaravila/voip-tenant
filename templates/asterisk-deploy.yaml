@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.tenant.name }}-asterisk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: asterisk
+      tenant: {{ .Values.tenant.name }}
+  template:
+    metadata:
+      labels:
+        app: asterisk
+        tenant: {{ .Values.tenant.name }}
+    spec:
+      containers:
+      - name: asterisk
+        image: {{ .Values.images.asterisk }}
+        
+        # FLAVORS
+        resources:
+          requests:
+            cpu: {{ index .Values.resources .Values.flavor "asterisk" "cpu" }}
+            memory: {{ index .Values.resources .Values.flavor "asterisk" "memory" }}
+          limits:
+            cpu: {{ index .Values.resources .Values.flavor "asterisk" "cpu" }}
+            memory: {{ index .Values.resources .Values.flavor "asterisk" "memory" }}
+
+        env:
+          - name: DB_HOST
+            value: {{ .Values.database.host }}
+          - name: DB_USER
+            value: {{ .Values.database.user }}
+          - name: DB_PASS
+            value: {{ .Values.database.password }}
+        
+        volumeMounts:
+          - name: config
+            mountPath: /etc/asterisk/extconfig.conf
+            subPath: extconfig.conf
+          - name: config
+            mountPath: /etc/asterisk/res_odbc.conf
+            subPath: res_odbc.conf
+          - name: config
+            mountPath: /etc/asterisk/sorcery.conf
+            subPath: sorcery.conf
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Values.tenant.name }}-asterisk-config
