@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.tenant.name }}-asterisk
+spec:
+  selector:
+    app: asterisk
+    tenant: {{ .Values.tenant.name }}
+  ports:
+    - protocol: UDP
+      port: 5060
+      targetPort: 5060
+      name: sip
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.tenant.name }}-rtpengine
+spec:
+  selector:
+    app: rtpengine
+    tenant: {{ .Values.tenant.name }}
+  ports:
+    - protocol: UDP
+      port: 2223
+      name: ng-control
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.tenant.name }}-kamailio
+spec:
+  selector:
+    app: kamailio
+    tenant: {{ .Values.tenant.name }}
+  ports:
+    - protocol: UDP
+      port: 5060
+      targetPort: 5060
+      name: sip-kamailio
