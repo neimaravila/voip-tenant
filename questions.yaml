@@ -1,15 +1,15 @@
 # Grupos de Configuração para organizar a interface
 categories:
-  - VoIP Tenant Settings
-  - Network Configuration
-  - Database Credentials
+  - Configuracoes de VoIP
+  - Configuracoes de Rede
+  - Configuracoes de Banco
 
 questions:
   # ----------------------------------------------------
   # 1. ESCOLHA DO PLANO (FLAVOR)
   # ----------------------------------------------------
   - variable: flavor
-    label: "Plano de Serviço (Flavor)"
+    label: "Plano de Serviço"
     description: "Selecione o plano de recursos (CPU/RAM) para este cliente."
     type: enum # Permite apenas valores pré-definidos (dropdown list)
     required: true
@@ -24,7 +24,7 @@ questions:
   # 2. CONFIGURAÇÃO DE REDE
   # ----------------------------------------------------
   - variable: tenant.publicIp
-    label: "IP Público (NAT de Borda)"
+    label: "IP Público"
     description: "O endereço IP público de acesso para o tráfego SIP e RTP. (Ex: 200.200.200.99)"
     type: string
     required: true
@@ -33,7 +33,7 @@ questions:
     # validation: "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$"
     
   - variable: tenant.internalIp
-    label: "IP Interno (Multus/Cluster)"
+    label: "IP Interno"
     description: "O endereço IP privado alocado para a interface Multus do RTPEngine (target do NAT 1:1)."
     type: string
     required: true
